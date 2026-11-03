@@ -63,6 +63,9 @@ def main(argv=None):
     p.add_argument("--skip", action="store_true", help="見送り")
     p.add_argument("--reason", default=""); p.add_argument("--memo", default="")
     sub.add_parser("report")
+    p = sub.add_parser("article", help="保存済みの出走表から数値ルールの記事を作る")
+    p.add_argument("place"); p.add_argument("date"); p.add_argument("race", type=int)
+    p.add_argument("--distance", type=int, default=None)
     sub.add_parser("fill", help="台帳にあって結果が未取得のレースだけ結果を取りに行く")
     a = ap.parse_args(argv)
 
@@ -88,6 +91,11 @@ def main(argv=None):
         print("記録:", row)
     elif a.cmd == "report":
         print(ledger.format_report(ledger.evaluate()))
+    elif a.cmd == "article":
+        import article
+        import strategy
+        prog = load_json("program", a.place, a.date, a.race) or AutoraceClient().program(a.place, a.date, a.race)
+        print(article.build(a.place, a.race, prog, strategy.make_picks(prog, strategy.current_rule(), a.distance)))
     elif a.cmd == "fill":
         todo = sorted({(r["場"], r["日付"], int(r["R"])) for r in ledger._rows()
                        if load_json("result", r["場"], r["日付"], int(r["R"])) is None})

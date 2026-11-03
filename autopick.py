@@ -8,7 +8,9 @@ GitHub Actions から数分おきに呼ばれる想定。1回の実行で各場�
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
+import article
 import ledger
 import strategy
 from autorace_api import BASE, PLACE_JA, AutoraceClient, now_iso, save_json
@@ -29,6 +31,16 @@ def deadline_iso(day: str, hhmm: str) -> str:
 def already_picked(day, place, race) -> bool:
     return any((r["日付"], r["場"], r["R"], r["種別"]) == (day, place, str(race), "数値")
                for r in ledger._rows())
+
+
+ARTICLES = Path(__file__).parent / "articles"
+
+
+def write_article(day, place, race, program, picks) -> Path:
+    path = ARTICLES / day / f"{place}_{race:02d}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(article.build(place, race, program, picks) + "\n", encoding="utf-8")
+    return path
 
 
 def run() -> list[str]:
@@ -58,6 +70,10 @@ def run() -> list[str]:
                             kind="数値", rule=rule["version"], deadline=deadline,
                             memo=f'順位{"-".join(map(str, picks["順位"]))} 距離{h.get("distance")}m')
             logs.append(f'{name}: 記録 本命{picks["本命"]} 対抗{picks["対抗"]}（締切{h["telvoteTime"]}）')
+            try:  # 記事で失敗しても買い目の記録は残す
+                write_article(day, place, race, program, picks)
+            except Exception as e:
+                logs.append(f"{name}: 記事作成に失敗（{e}）")
         except PermissionError as e:
             logs.append(f"{name}: 記録せず（{e}）")
     save_json("hold", "all", hold["date"][:10], 0, hold)

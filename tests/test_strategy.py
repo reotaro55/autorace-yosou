@@ -42,3 +42,29 @@ def test_dates():
     assert autopick.race_date(h) == "2026-11-03"
     assert autopick.deadline_iso("2026-11-03", "18:48") == "2026-11-03T18:48:00+09:00"
     assert autopick.deadline_iso("2026-11-03", "24:35") == "2026-11-04T00:35:00+09:00"
+
+
+def test_article_matches_picks():
+    import article
+    p = strategy.make_picks(PROG, strategy.load_rule("v1"), 3100)
+    text = article.build("kawaguchi", 8, PROG, p)
+    assert text.startswith("🏁 川口8R")
+    assert "①②を早めに交わせれば" in text  # 同じ10線の内枠②も交わす相手に入る
+    for combo in p["本命"] + p["対抗"]:
+        assert combo in text
+    for ng in ("鉄板", "抜群", "オッズ", "外のコース"):
+        assert ng not in text
+
+
+def test_article_all_cases():
+    """全車を順番に頭にして、記事生成が破綻しないか確認する。"""
+    import article
+    import copy
+    for car in range(1, 8):
+        prog = copy.deepcopy(PROG)
+        for pl in prog["playerList"]:
+            if pl["carNo"] == car:
+                pl["trialRunTime"] = "3.20"
+        p = strategy.make_picks(prog, strategy.load_rule("v1"), 3100)
+        assert p["順位"][0] == car
+        article.build("kawaguchi", 8, prog, p)
