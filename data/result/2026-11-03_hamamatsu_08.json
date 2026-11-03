@@ -1,0 +1,544 @@
+{
+ "twicePlayerExist": 0,
+ "raceResult": [
+  {
+   "order": 1,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 2,
+   "playerCode": "3204",
+   "retireFlag": 0,
+   "playerName": "小林　瑞季",
+   "playerNameEn": "MIZUKI　KOBAYASHI",
+   "motorcycleName": "ココロオドル",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.33",
+   "raceTime": "3.426",
+   "st": "0.16",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  },
+  {
+   "order": 2,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 5,
+   "playerCode": "2918",
+   "retireFlag": 0,
+   "playerName": "高橋　義弘",
+   "playerNameEn": "YOSHIHIRO　TAKAHASHI",
+   "motorcycleName": "キャバーマン",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.34",
+   "raceTime": "3.435",
+   "st": "0.07",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  },
+  {
+   "order": 3,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 3,
+   "playerCode": "3215",
+   "retireFlag": 0,
+   "playerName": "吉原　恭佑",
+   "playerNameEn": "KYOSUKE　YOSHIHARA",
+   "motorcycleName": "レッドＴ７０",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.37",
+   "raceTime": "3.442",
+   "st": "0.11",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  },
+  {
+   "order": 4,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 8,
+   "playerCode": "3210",
+   "retireFlag": 0,
+   "playerName": "長田　恭徳",
+   "playerNameEn": "TAKANORI　NAGATA",
+   "motorcycleName": "エドワード",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.36",
+   "raceTime": "3.442",
+   "st": "0.13",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  },
+  {
+   "order": 5,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 6,
+   "playerCode": "9025",
+   "retireFlag": 0,
+   "playerName": "西　　翔子",
+   "playerNameEn": "SHOKO　NISHI",
+   "motorcycleName": "ニッキ",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.33",
+   "raceTime": "3.452",
+   "st": "0.19",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  },
+  {
+   "order": 6,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 1,
+   "playerCode": "3115",
+   "retireFlag": 0,
+   "playerName": "丸山　智史",
+   "playerNameEn": "SATOSHI　MARUYAMA",
+   "motorcycleName": "ジェシカ・Ｊ",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.36",
+   "raceTime": "3.452",
+   "st": "0.16",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  },
+  {
+   "order": 7,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 7,
+   "playerCode": "2921",
+   "retireFlag": 0,
+   "playerName": "田中　正樹",
+   "playerNameEn": "MASAKI　TANAKA",
+   "motorcycleName": "オツルパパ",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.35",
+   "raceTime": "3.458",
+   "st": "0.07",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  },
+  {
+   "order": 8,
+   "accidentCode": null,
+   "accidentName": null,
+   "carNo": 4,
+   "playerCode": "2204",
+   "retireFlag": 0,
+   "playerName": "影山　　伸",
+   "playerNameEn": "SHIN　KAGEYAMA",
+   "motorcycleName": "ブイシュガ",
+   "handicap": 0,
+   "traialRetryCode": null,
+   "traialTime": "3.36",
+   "raceTime": "3.471",
+   "st": "0.21",
+   "foulCode": null,
+   "anotherRaceNo": null,
+   "anotherRaceNo2": null
+  }
+ ],
+ "warningPlayerList": [],
+ "trialWarningPlayerList": [],
+ "grandNoteList": [
+  {
+   "lapNo": 7,
+   "rankList": [
+    {
+     "rank": 1,
+     "carNo": "2"
+    },
+    {
+     "rank": 2,
+     "carNo": "5"
+    },
+    {
+     "rank": 3,
+     "carNo": "3"
+    },
+    {
+     "rank": 4,
+     "carNo": "8"
+    },
+    {
+     "rank": 5,
+     "carNo": "6"
+    },
+    {
+     "rank": 6,
+     "carNo": "1"
+    },
+    {
+     "rank": 7,
+     "carNo": "7"
+    },
+    {
+     "rank": 8,
+     "carNo": "4"
+    }
+   ]
+  },
+  {
+   "lapNo": 6,
+   "rankList": [
+    {
+     "rank": 1,
+     "carNo": "2"
+    },
+    {
+     "rank": 2,
+     "carNo": "5"
+    },
+    {
+     "rank": 3,
+     "carNo": "3"
+    },
+    {
+     "rank": 4,
+     "carNo": "8"
+    },
+    {
+     "rank": 5,
+     "carNo": "1"
+    },
+    {
+     "rank": 6,
+     "carNo": "6"
+    },
+    {
+     "rank": 7,
+     "carNo": "7"
+    },
+    {
+     "rank": 8,
+     "carNo": "4"
+    }
+   ]
+  },
+  {
+   "lapNo": 5,
+   "rankList": [
+    {
+     "rank": 1,
+     "carNo": "2"
+    },
+    {
+     "rank": 2,
+     "carNo": "5"
+    },
+    {
+     "rank": 3,
+     "carNo": "3"
+    },
+    {
+     "rank": 4,
+     "carNo": "8"
+    },
+    {
+     "rank": 5,
+     "carNo": "1"
+    },
+    {
+     "rank": 6,
+     "carNo": "6"
+    },
+    {
+     "rank": 7,
+     "carNo": "7"
+    },
+    {
+     "rank": 8,
+     "carNo": "4"
+    }
+   ]
+  },
+  {
+   "lapNo": 4,
+   "rankList": [
+    {
+     "rank": 1,
+     "carNo": "2"
+    },
+    {
+     "rank": 2,
+     "carNo": "3"
+    },
+    {
+     "rank": 3,
+     "carNo": "5"
+    },
+    {
+     "rank": 4,
+     "carNo": "8"
+    },
+    {
+     "rank": 5,
+     "carNo": "1"
+    },
+    {
+     "rank": 6,
+     "carNo": "7"
+    },
+    {
+     "rank": 7,
+     "carNo": "6"
+    },
+    {
+     "rank": 8,
+     "carNo": "4"
+    }
+   ]
+  },
+  {
+   "lapNo": 3,
+   "rankList": [
+    {
+     "rank": 1,
+     "carNo": "2"
+    },
+    {
+     "rank": 2,
+     "carNo": "3"
+    },
+    {
+     "rank": 3,
+     "carNo": "5"
+    },
+    {
+     "rank": 4,
+     "carNo": "8"
+    },
+    {
+     "rank": 5,
+     "carNo": "1"
+    },
+    {
+     "rank": 6,
+     "carNo": "7"
+    },
+    {
+     "rank": 7,
+     "carNo": "6"
+    },
+    {
+     "rank": 8,
+     "carNo": "4"
+    }
+   ]
+  },
+  {
+   "lapNo": 2,
+   "rankList": [
+    {
+     "rank": 1,
+     "carNo": "3"
+    },
+    {
+     "rank": 2,
+     "carNo": "2"
+    },
+    {
+     "rank": 3,
+     "carNo": "8"
+    },
+    {
+     "rank": 4,
+     "carNo": "5"
+    },
+    {
+     "rank": 5,
+     "carNo": "1"
+    },
+    {
+     "rank": 6,
+     "carNo": "7"
+    },
+    {
+     "rank": 7,
+     "carNo": "6"
+    },
+    {
+     "rank": 8,
+     "carNo": "4"
+    }
+   ]
+  },
+  {
+   "lapNo": 1,
+   "rankList": [
+    {
+     "rank": 1,
+     "carNo": "3"
+    },
+    {
+     "rank": 2,
+     "carNo": "8"
+    },
+    {
+     "rank": 3,
+     "carNo": "7"
+    },
+    {
+     "rank": 4,
+     "carNo": "5"
+    },
+    {
+     "rank": 5,
+     "carNo": "2"
+    },
+    {
+     "rank": 6,
+     "carNo": "1"
+    },
+    {
+     "rank": 7,
+     "carNo": "6"
+    },
+    {
+     "rank": 8,
+     "carNo": "4"
+    }
+   ]
+  }
+ ],
+ "refundInfo": {
+  "rtw": {
+   "typeCode": 0,
+   "typeName": "通常",
+   "list": [
+    {
+     "1thCarNo": 2,
+     "2thCarNo": 5,
+     "refund": 410,
+     "pop": 1,
+     "refundVotes": "2592"
+    }
+   ]
+  },
+  "rfw": {
+   "typeCode": 0,
+   "typeName": "通常",
+   "list": [
+    {
+     "1thCarNo": 2,
+     "2thCarNo": 5,
+     "refund": 260,
+     "pop": 1,
+     "refundVotes": "1403"
+    }
+   ]
+  },
+  "rt3": {
+   "typeCode": 0,
+   "typeName": "通常",
+   "list": [
+    {
+     "1thCarNo": 2,
+     "2thCarNo": 5,
+     "3thCarNo": 3,
+     "refund": 1250,
+     "pop": 2,
+     "refundVotes": "12082"
+    }
+   ]
+  },
+  "rf3": {
+   "typeCode": 0,
+   "typeName": "通常",
+   "list": [
+    {
+     "1thCarNo": 2,
+     "2thCarNo": 3,
+     "3thCarNo": 5,
+     "refund": 420,
+     "pop": 2,
+     "refundVotes": "3239"
+    }
+   ]
+  },
+  "wid": {
+   "typeCode": 0,
+   "typeName": "通常",
+   "list": [
+    {
+     "1thCarNo": 2,
+     "2thCarNo": 5,
+     "refund": 140,
+     "pop": 1,
+     "refundVotes": "437"
+    },
+    {
+     "1thCarNo": 2,
+     "2thCarNo": 3,
+     "refund": 200,
+     "pop": 2,
+     "refundVotes": "253"
+    },
+    {
+     "1thCarNo": 3,
+     "2thCarNo": 5,
+     "refund": 240,
+     "pop": 5,
+     "refundVotes": "188"
+    }
+   ]
+  },
+  "tns": {
+   "typeCode": 0,
+   "typeName": "通常",
+   "list": [
+    {
+     "carNo": 2,
+     "refund": 210,
+     "pop": 1,
+     "refundVotes": "262"
+    }
+   ]
+  },
+  "fns": {
+   "typeCode": 0,
+   "typeName": "通常",
+   "list": [
+    {
+     "carNo": 2,
+     "order": 1,
+     "refund": 100,
+     "pop": 1,
+     "refundVotes": "70"
+    },
+    {
+     "carNo": 5,
+     "order": 2,
+     "refund": 120,
+     "pop": 2,
+     "refundVotes": "15"
+    },
+    {
+     "carNo": 3,
+     "order": 3,
+     "refund": 160,
+     "pop": 5,
+     "refundVotes": "9"
+    }
+   ]
+  },
+  "absent": []
+ },
+ "_fetched_at": "2026-11-04T01:00:57+09:00"
+}
