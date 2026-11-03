@@ -2,10 +2,9 @@
 
 型（チャッピーの記事を参考）
   🏁 タイトル（場名R＋短い中立的な言葉）
-  🎯 中心：頭の選手と勝ち筋（ハンデ配置と試走T）
-  🔥 相手：2・3着の主な相手と、その条件
-  🔸 3着：残りの拾い目
-  ⚠️ 懸念材料：本線が崩れる条件
+  🎯 頭の選手と勝ち筋（ハンデ配置と試走T）
+  🔥 2・3着の主な相手と、その条件
+  🔸 押さえと、本線が崩れる条件
   ✅ 本命 / 🔄 対抗 / ハッシュタグ
 
 守ること
@@ -34,7 +33,8 @@ def _c(n: int) -> str:
     return CIRCLE[n]
 
 
-def build(place: str, race: int, program: dict, picks: dict) -> str:
+def build(place: str, race: int, program: dict, picks: dict, meta: dict | None = None) -> str:
+    meta = meta or {}
     rd = {k: v for k, v in _riders(program).items() if not v["欠車"]}
     order = picks["順位"]
     honmei, taikou = picks["本命"], picks["対抗"]
@@ -42,94 +42,81 @@ def build(place: str, race: int, program: dict, picks: dict) -> str:
     A = rd[a]
     who = lambda n: f"{_c(n)}{rd[n]['名字']}"  # noqa: E731
     line = lambda n: f"{rd[n]['ハンデ']}線"  # noqa: E731
+    cs = lambda ns: "".join(_c(n) for n in ns)  # noqa: E731
 
     trials = sorted((float(v["試走T"]), k) for k, v in rd.items() if v["試走T"])
     fastest = trials[0][1] if trials else None
     min_h, max_h = min(v["ハンデ"] for v in rd.values()), max(v["ハンデ"] for v in rd.values())
+    all_same = min_h == max_h  # 全車同ハン（枠なり発走）
 
-    # 2・3着の相手は本命の買い目に出てくる順
-    seen = []
+    # 2・3着の相手は本命の買い目に出てくる順、押さえは残り
+    partners, others = [], []
     for combo in honmei:
         for x in map(int, combo.split("-")):
-            if x != a and x not in seen:
-                seen.append(x)
-    partners = seen[:2]
-    others = []
+            if x != a and x not in partners:
+                partners.append(x)
+    partners = partners[:2]
     for combo in honmei + taikou:
         for x in map(int, combo.split("-")):
             if x != a and x not in partners and x not in others:
                 others.append(x)
 
-    # タイトル
-    title = f"🏁 {PLACE_JA[place]}{race}R｜{_c(a)}中心"
-
-    # 中心
-    t_note = f"試走{A['試走T']}" + ("は一番時計" if a == fastest else "")
-    # 交わす必要がある相手：前のハンデの車と、同じハンデで内枠（車番が小さい）の車
+    # 前にいて交わす必要がある車：前のハンデの車と、同じハンデで内枠の車
     front = sorted([k for k, v in rd.items()
                     if v["ハンデ"] < A["ハンデ"] or (v["ハンデ"] == A["ハンデ"] and k < a)],
                    key=lambda k: (rd[k]["ハンデ"], k))
-    all_same = min_h == max_h  # 全車同ハン（枠なり発走）
+    grp = lambda cars, label: cs(cars) if len(cars) <= 3 else label  # noqa: E731
 
-    def group(cars, label):
-        return "".join(_c(k) for k in cars) if len(cars) <= 3 else label
+    # タイトル：場名R＋開催日の言葉（中立的に）
+    day = meta.get("day_label", "")
+    title = f"🏁 {PLACE_JA[place]}{race}R｜" + (f"{day}の初戦" if day and race == 1 else (day or "展開予想"))
 
+    # ① 頭の選手と勝ち筋
+    fast = a == fastest
     if not front:
         lead = "最内から" if all_same else f"{line(a)}から"
-        center = (f"🎯 {who(a)}の先行から。{t_note}。{lead}先手を取れれば、"
-                  "後ろの仕掛けを待たずにペースを上げる形。")
+        p1 = (f"🎯 {who(a)}の先行から。{lead}先に出れば、そのまま押し切る形。"
+              f"試走{A['試走T']}" + ("は一番時計。" if fast else "。"))
     elif all_same:
-        center = (f"🎯 {who(a)}の捌きから。{t_note}。全車{line(a)}の枠なり発走。"
-                  f"外寄りの枠から{group(front, '内枠勢')}を早めに捌ければ、ペースを上げる形。")
+        n = max(rd)
+        pos = "大外" if a == n else ("外枠" if a > n / 2 else "中枠")
+        p1 = (f"🎯 {who(a)}は{pos}から。試走{A['試走T']}" + ("の一番時計でも" if fast else "でも") +
+              f"、内の{grp(front, '車')}をまとめて交わせるとは限らない。立ち上がりで好位を取れれば、早めに抜け出す形。")
     else:
         verb = "追い込み" if A["ハンデ"] == max_h else "抜け出し"
-        center = (f"🎯 {who(a)}の{verb}から。{t_note}。{line(a)}から{group(front, '前団')}を早めに交わせれば、"
-                  "後ろの仕掛けを待たずにペースを上げる形。")
+        p1 = (f"🎯 {who(a)}の{verb}から。{line(a)}から{grp(front, '前団')}を早めに捌ければ、"
+              f"後ろを待たずにペースを上げる形。試走{A['試走T']}" + ("は一番時計。" if fast else "。"))
 
-    # 相手（同じ言い回しが続かないように順番で変える）
-    sents = []
+    # ② 相手
+    cl = []
     for i, b in enumerate(partners):
         B = rd[b]
-        if B["ハンデ"] > A["ハンデ"] and i == 0:
-            sents.append(f"{_c(b)}は試走{B['試走T']}、{line(b)}から追い上げる間に{_c(a)}に離されると届かない。")
+        place_from = "内枠から" if B["ハンデ"] == A["ハンデ"] else f"{line(b)}から"
+        if b in front:
+            cl.append(f"{_c(b)}は{place_from}先に出て、{_c(a)}の攻めをしのげば逆転まで。" if i == 0
+                      else f"{_c(b)}も前で粘れば2着争い。")
         elif B["ハンデ"] > A["ハンデ"]:
-            sents.append(f"{_c(b)}は{line(b)}から試走{B['試走T']}。{_c(a)}の後ろで2着争いに加われるか。")
-        elif B["ハンデ"] < A["ハンデ"]:
-            sents.append(f"{_c(b)}は{line(b)}から先に出て、前で粘れるか。")
-        elif b < a and i == 0:
-            sents.append(f"{_c(b)}は内枠から先に出られれば、逆転まで。")
-        elif b < a:
-            sents.append(f"{_c(b)}も内枠から先行して、前で粘れるか。")
+            cl.append(f"{_c(b)}は{line(b)}から追う形で、{_c(a)}に離されなければ届く。" if i == 0
+                      else f"{_c(b)}は試走{B['試走T']}、後方から2着争いに加われるか。")
         else:
-            sents.append(f"{_c(b)}は外枠から{_c(a)}の後ろを追走して2着争いへ。")
-    rival = f"🔥 相手は{'と'.join(who(b) for b in partners)}。" + "".join(sents)
+            cl.append(f"{_c(b)}は{_c(a)}の後ろを追走する形。")
+    p2 = f"🔥 相手は{'と'.join(who(b) for b in partners)}。" + "".join(cl)
 
-    # 3着
-    third = ""
-    if others:
-        third = f"🔸 3着は{'、'.join(who(x) for x in others)}も拾い、{_c(partners[0])}との一本被りにはしない。"
-
-    # 懸念材料：本線が崩れる条件
+    # ③ 押さえと崩れる条件（ここに出す車はすべて買い目に入っている）
     ahead = [k for k in partners if k in front]
     behind = [k for k in partners if rd[k]["ハンデ"] > A["ハンデ"]]
-    fl = "内枠勢" if all_same else "前団"
     if front and ahead:
-        worry = (f"⚠️ {group(front, fl)}に先行を許して捌きに手間取れば、"
-                 f"{''.join(_c(k) for k in ahead)}の前残りまで。")
-    elif front and behind:
+        worry = f"{_c(a)}が捌きに手間取れば、{cs(ahead)}の前残りまで。"
+    elif behind:
         far = max(behind, key=lambda k: (rd[k]["ハンデ"], k))
-        worry = f"⚠️ {group(front, fl)}の抵抗が長引けば、後方の{_c(far)}が届く展開まで。"
-    elif front:
-        worry = f"⚠️ {group(front, fl)}の抵抗が長引けば、{_c(a)}の頭は崩れる。"
+        worry = f"{_c(a)}の抜け出しが遅れれば、{_c(far)}の逆転まで。"
     else:
-        rear = max(partners, key=lambda k: (rd[k]["ハンデ"], k))
-        worry = f"⚠️ {_c(rear)}の追い上げが早ければ、逆転まで。"
+        worry = f"{_c(a)}が先手を取れなければ、{cs(partners)}の逆転まで。"
+    keep = f"{'、'.join(who(x) for x in others)}の残りも押さえ、{_c(partners[0])}との一本被りにはしない。" if others else ""
+    p3 = f"🔸 {keep}{worry}"
 
-    body = [title, "", center, "", rival]
-    if third:
-        body += ["", third]
-    body += ["", worry, "", "✅ 本命", *honmei, "", "🔄 対抗", *taikou, "",
-             f"#{PLACE_JA[place]}オート #オートレース予想"]
+    tags = [f"#{PLACE_JA[place]}オート", "#オートレース予想"] + ([f"#{meta['tag']}"] if meta.get("tag") else [])
+    body = [title, "", p1, "", p2, "", p3, "", "✅ 本命", *honmei, "", "🔄 対抗", *taikou, "", " ".join(tags)]
     text = "\n".join(body)
     _check(text, honmei + taikou)
     return text

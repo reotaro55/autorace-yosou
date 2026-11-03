@@ -8,6 +8,7 @@ GitHub Actions から数分おきに呼ばれる想定。1回の実行で各場�
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+import re
 from pathlib import Path
 
 import article
@@ -37,10 +38,23 @@ def already_picked(day, place, race) -> bool:
 ARTICLES = Path(__file__).parent / "articles"
 
 
-def write_article(day, place, race, program, picks) -> Path:
+def article_meta(h: dict, day: str) -> dict:
+    if h.get("periodEndDate") == day:
+        label = "最終日"
+    elif int(h.get("paragraphday") or 0) == 1:
+        label = "初日"
+    else:
+        label = f'{h.get("paragraphday")}日目'
+    tag = ""
+    if h.get("gradeCode") not in (0, None):  # 普通開催以外は大会名をタグに
+        tag = re.sub(r"^(SG|GⅠ|GⅡ|G1|G2|GI|GII)", "", h.get("titleCsv") or "").replace("オートレース", "")
+    return {"day_label": label, "tag": tag}
+
+
+def write_article(day, place, race, program, picks, meta=None) -> Path:
     path = ARTICLES / day / f"{place}_{race:02d}.md"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(article.build(place, race, program, picks) + "\n", encoding="utf-8")
+    path.write_text(article.build(place, race, program, picks, meta) + "\n", encoding="utf-8")
     return path
 
 
@@ -72,7 +86,7 @@ def run() -> list[str]:
                             memo=f'順位{"-".join(map(str, picks["順位"]))} 距離{h.get("distance")}m')
             logs.append(f'{name}: 記録 本命{picks["本命"]} 対抗{picks["対抗"]}（締切{h["telvoteTime"]}）')
             try:  # 記事で失敗しても買い目の記録は残す
-                path = write_article(day, place, race, program, picks)
+                path = write_article(day, place, race, program, picks, article_meta(h, day))
             except Exception as e:
                 logs.append(f"{name}: 記事作成に失敗（{e}）")
             else:
