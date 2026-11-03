@@ -1,5 +1,5 @@
 {
- "date": "2026-11-03 10:19:14",
+ "date": "2026-11-03 10:30:04",
  "today": [
   {
    "placeCode": 4,
@@ -21,9 +21,9 @@
    "oddsRaceNo": 1,
    "resultRaceNo": 0,
    "raceStartTime": "10:31",
-   "temp": "19.0",
-   "humid": "60.0",
-   "roadtemp": "31.0",
+   "temp": "20.0",
+   "humid": "61.0",
+   "roadtemp": "34.0",
    "situationCode": 5,
    "weather": "晴",
    "weatherCode": "01",
@@ -31,7 +31,7 @@
    "raceClass": "一般戦",
    "distance": 3100,
    "telvoteTime": "10:29",
-   "telvoteClose": false,
+   "telvoteClose": true,
    "preSale": "thisTime",
    "changeInetFlg": 0,
    "cancelFlg": "0",
@@ -206,5 +206,5 @@
    "cancelFlg": "0"
   }
  ],
- "_fetched_at": "2026-11-03T10:19:19+09:00"
+ "_fetched_at": "2026-11-03T10:30:06+09:00"
 }
