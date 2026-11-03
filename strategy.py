@@ -24,8 +24,31 @@ def load_rule(version: str) -> dict:
     return json.loads((RULES_DIR / f"{version}.json").read_text(encoding="utf-8"))
 
 
+def avg_st(program: dict, player_code: str) -> float | None:
+    """近10走の平均ST。記録が3走未満なら None。"""
+    sts = []
+    for x in (program.get("latest10List") or {}).get(player_code, []):
+        try:
+            v = float(x.get("stTime") or 0)
+        except ValueError:
+            continue
+        if v > 0:
+            sts.append(v)
+    return round(sum(sts) / len(sts), 3) if len(sts) >= 3 else None
+
+
+def all_rules() -> list[dict]:
+    files = sorted(RULES_DIR.glob("v*.json"), key=lambda p: int(p.stem[1:]))
+    return [json.loads(f.read_text(encoding="utf-8")) for f in files]
+
+
 def rank(program: dict, rule: dict, distance: int | None = None) -> list[dict]:
     dist = distance or rule["default_distance"]
+    stw = rule.get("st_weight", 0.0)
+    active = [p for p in program["playerList"] if not (p.get("absent") or p.get("retireFlag"))]
+    st = {p["carNo"]: avg_st(program, p.get("playerCode", "")) for p in active}
+    known = [v for v in st.values() if v is not None]
+    st_mean = sum(known) / len(known) if known else 0.0
     rows = []
     for p in program["playerList"]:
         if p.get("absent") or p.get("retireFlag"):
@@ -35,9 +58,11 @@ def rank(program: dict, rule: dict, distance: int | None = None) -> list[dict]:
             raise ValueError(f'{p["carNo"]}号車の試走タイムがまだ出ていない')
         dev = p.get("raceDev")
         exp = float(t) + (float(dev) / 1000 * rule["dev_weight"] if dev else 0.0)
-        total = (dist + p["handicap"]) / 100 * exp
+        s_avg = st[p["carNo"]] if st[p["carNo"]] is not None else st_mean
+        total = (dist + p["handicap"]) / 100 * exp + stw * s_avg
         rows.append({"車": p["carNo"], "見込み競走T": round(exp, 3),
-                     "見込み走破時間": round(total, 2), "偏差なし": not dev})
+                     "見込み走破時間": round(total, 2), "偏差なし": not dev,
+                     "平均ST": st[p["carNo"]]})
     return sorted(rows, key=lambda r: (r["見込み走破時間"], r["車"]))
 
 

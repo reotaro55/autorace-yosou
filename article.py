@@ -109,18 +109,6 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
         p1 = (f"{who(a)}の{verb}から。{line(a)}から{grp(front, '前団')}を早めに捌ければ、"
               f"後ろを待たずにペースを上げる形。{t_fast}")
 
-    # スタート：近10走の平均STで、頭の出足を一言添える（STだけで隊列は決めつけない）
-    sts = sorted(v["ST"] for v in rd.values() if v["ST"] is not None)
-    if A["ST"] is not None and len(sts) >= 3:
-        good = A["ST"] <= sts[1]  # 上位2番目以内
-        st = f"近10走の平均ST{A['ST']:.2f}"
-        if not front:
-            p1 += (f"{st}と出足もあり、内の先手は譲りにくい。" if good
-                   else f"{st}とスタートは目立たず、出遅れれば後続に並ばれる。")
-        else:
-            p1 += (f"{st}と出足があり、序盤から前との差を詰められる。" if good
-                   else f"{st}とスタートは平凡。序盤で前に離されると捌きに手間取る。")
-
     # ② 相手：筆頭と、出番の条件つきの2人目
     b, c = partners[0], (partners[1] if len(partners) > 1 else None)
     B = rd[b]
@@ -134,8 +122,6 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
         sb = (f"{_c(a)}が抜け出す前に好位へ付け、早めに射程へ入れれば" +
               ("逆転まで。" if b in heads else "2着は堅く争う。"))
     p2 = f"相手筆頭は{who(b)}。{sb}"
-    if b in front and B["ST"] is not None and A["ST"] is not None and B["ST"] <= A["ST"] - 0.02:
-        p2 += f"平均ST{B['ST']:.2f}と出足は{_c(a)}より上。"
     if c:
         C = rd[c]
         if c in front:

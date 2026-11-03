@@ -96,3 +96,25 @@ def test_avg_st():
     prog = {"latest10List": {"9": [{"stTime": "0.10"}, {"stTime": "0.20"}, {"stTime": None}, {"stTime": "0.12"}]}}
     assert article.avg_st(prog, "9") == 0.14
     assert article.avg_st({"latest10List": {"9": [{"stTime": "0.10"}]}}, "9") is None  # 3走未満は使わない
+
+
+def test_v2_uses_start_timing():
+    import copy
+    prog = copy.deepcopy(PROG)
+    # 全員同じ条件にして、STだけ差をつける
+    for pl in prog["playerList"]:
+        pl.update(handicap=0, trialRunTime="3.50", raceDev="050")
+    prog["latest10List"] = {pl["playerCode"]: [{"stTime": "0.20"}] * 5 for pl in prog["playerList"]}
+    prog["latest10List"]["2726"] = [{"stTime": "0.05"}] * 5  # ⑦だけスタートが速い
+    assert strategy.make_picks(prog, strategy.load_rule("v2"))["順位"][0] == 7
+    assert strategy.make_picks(prog, strategy.load_rule("v1"))["順位"][0] == 1  # v1はSTを見ない
+
+
+def test_ledger_keeps_rules_apart(tmp_path, monkeypatch):
+    import autorace_api
+    import ledger
+    monkeypatch.setattr(autorace_api, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(ledger, "LEDGER", tmp_path / "picks.csv")
+    ledger.add_pick("2026-11-03", "kawaguchi", 1, "1-2-3", kind="数値", rule="v1")
+    ledger.add_pick("2026-11-03", "kawaguchi", 1, "2-1-3", kind="数値", rule="v2")  # 理由なしで記録できる
+    assert {e.rule for e in ledger.evaluate()} == {"v1", "v2"}

@@ -63,8 +63,8 @@ def add_pick(date, place, race, honmei, taikou="", kind="裁量", unit=100,
         raise PermissionError("締切を過ぎているので記録しない")
     if load_json("result", place, date, int(race)) is not None:
         raise PermissionError("このレースは結果を取得済み。結果を見た後の記録はできない")
-    existing = [r for r in _rows() if (r["日付"], r["場"], r["R"], r["種別"]) ==
-                (date, place, str(race), kind)]
+    existing = [r for r in _rows() if (r["日付"], r["場"], r["R"], r["種別"], r.get("ルール") or "") ==
+                (date, place, str(race), kind, rule)]
     if existing and not reason:
         raise PermissionError("同じレースの買い目が記録済み。変更するなら変更理由を書く（追加する根拠と削る根拠）")
     h, t = _norm(honmei), _norm(taikou)
@@ -101,7 +101,7 @@ def final_picks() -> list[dict]:
     latest: dict[tuple, dict] = {}
     late: list[dict] = []
     for r in _rows():
-        key = (r["日付"], r["場"], r["R"], r["種別"])
+        key = (r["日付"], r["場"], r["R"], r["種別"], r.get("ルール") or "")
         res = load_json("result", r["場"], r["日付"], int(r["R"]))
         if res and r["記録時刻"] > res.get("_fetched_at", "9999"):
             late.append(r)

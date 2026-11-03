@@ -1,0 +1,10 @@
+{
+  "version": "v2",
+  "adopted_from": "2026-11-03",
+  "note": "v1＋スタート。近10走の平均STを、位置取りの損も含めて3倍した秒数として走破時間に足す。STの記録が3走未満の選手は出走メンバーの平均STを使う",
+  "dev_weight": 1.0,
+  "st_weight": 3.0,
+  "default_distance": 3100,
+  "honmei": ["A-B-C", "A-C-B", "B-A-C"],
+  "taikou": ["B-C-A", "C-A-B", "A-B-D"]
+}
