@@ -69,16 +69,24 @@ def build(place: str, race: int, program: dict, picks: dict) -> str:
     front = sorted([k for k, v in rd.items()
                     if v["ハンデ"] < A["ハンデ"] or (v["ハンデ"] == A["ハンデ"] and k < a)],
                    key=lambda k: (rd[k]["ハンデ"], k))
+    all_same = min_h == max_h  # 全車同ハン（枠なり発走）
+
+    def group(cars, label):
+        return "".join(_c(k) for k in cars) if len(cars) <= 3 else label
+
     if not front:
-        center = (f"🎯 {who(a)}の先攻めから。{t_note}。{line(a)}から先手を取れれば、"
+        lead = "最内から" if all_same else f"{line(a)}から"
+        center = (f"🎯 {who(a)}の先行から。{t_note}。{lead}先手を取れれば、"
                   "後ろの仕掛けを待たずにペースを上げる形。")
+    elif all_same:
+        center = (f"🎯 {who(a)}の捌きから。{t_note}。全車{line(a)}の枠なり発走。"
+                  f"外寄りの枠から{group(front, '内枠勢')}を早めに捌ければ、ペースを上げる形。")
     else:
         verb = "追い込み" if A["ハンデ"] == max_h else "抜け出し"
-        fr = "".join(_c(k) for k in front)
-        center = (f"🎯 {who(a)}の{verb}から。{t_note}。{line(a)}から{fr}を早めに交わせれば、"
+        center = (f"🎯 {who(a)}の{verb}から。{t_note}。{line(a)}から{group(front, '前団')}を早めに交わせれば、"
                   "後ろの仕掛けを待たずにペースを上げる形。")
 
-    # 相手
+    # 相手（同じ言い回しが続かないように順番で変える）
     sents = []
     for i, b in enumerate(partners):
         B = rd[b]
@@ -88,8 +96,12 @@ def build(place: str, race: int, program: dict, picks: dict) -> str:
             sents.append(f"{_c(b)}は{line(b)}から試走{B['試走T']}。{_c(a)}の後ろで2着争いに加われるか。")
         elif B["ハンデ"] < A["ハンデ"]:
             sents.append(f"{_c(b)}は{line(b)}から先に出て、前で粘れるか。")
+        elif b < a and i == 0:
+            sents.append(f"{_c(b)}は内枠から先に出られれば、逆転まで。")
+        elif b < a:
+            sents.append(f"{_c(b)}も内枠から先行して、前で粘れるか。")
         else:
-            sents.append(f"{_c(b)}は同じ{line(b)}。{_c(a)}より先に出られれば逆転まで。")
+            sents.append(f"{_c(b)}は外枠から{_c(a)}の後ろを追走して2着争いへ。")
     rival = f"🔥 相手は{'と'.join(who(b) for b in partners)}。" + "".join(sents)
 
     # 3着
@@ -97,12 +109,21 @@ def build(place: str, race: int, program: dict, picks: dict) -> str:
     if others:
         third = f"🔸 3着は{'、'.join(who(x) for x in others)}も拾い、{_c(partners[0])}との一本被りにはしない。"
 
-    # 懸念材料：頭が後方なら前団の抵抗、頭が最前なら後方の追い上げ
-    rear = max(partners, key=lambda k: (rd[k]["ハンデ"], -k))
-    if front:
-        worry = f"⚠️ {''.join(_c(k) for k in front)}の抵抗が長引けば、後方の{_c(rear)}が届く展開まで。"
+    # 懸念材料：本線が崩れる条件
+    ahead = [k for k in partners if k in front]
+    behind = [k for k in partners if rd[k]["ハンデ"] > A["ハンデ"]]
+    fl = "内枠勢" if all_same else "前団"
+    if front and ahead:
+        worry = (f"⚠️ {group(front, fl)}に先行を許して捌きに手間取れば、"
+                 f"{''.join(_c(k) for k in ahead)}の前残りまで。")
+    elif front and behind:
+        far = max(behind, key=lambda k: (rd[k]["ハンデ"], k))
+        worry = f"⚠️ {group(front, fl)}の抵抗が長引けば、後方の{_c(far)}が届く展開まで。"
+    elif front:
+        worry = f"⚠️ {group(front, fl)}の抵抗が長引けば、{_c(a)}の頭は崩れる。"
     else:
-        worry = f"⚠️ 後方{_c(rear)}の追い上げが早ければ、逆転まで。"
+        rear = max(partners, key=lambda k: (rd[k]["ハンデ"], k))
+        worry = f"⚠️ {_c(rear)}の追い上げが早ければ、逆転まで。"
 
     body = [title, "", center, "", rival]
     if third:

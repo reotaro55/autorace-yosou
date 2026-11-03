@@ -74,3 +74,18 @@ def test_discord_skips_without_url(monkeypatch):
     import notify
     monkeypatch.delenv("DISCORD_WEBHOOK_URL", raising=False)
     assert notify.discord("test") is False
+
+
+def test_article_same_handicap():
+    """全車同ハン（枠なり）のレースで、状況に合わない言い回しが出ないこと。"""
+    import article
+    import copy
+    prog = copy.deepcopy(PROG)
+    for pl in prog["playerList"]:
+        pl["handicap"] = 0
+    prog["playerList"][6]["trialRunTime"] = "3.20"  # ⑦を頭に
+    p = strategy.make_picks(prog, strategy.load_rule("v1"), 3100)
+    text = article.build("hamamatsu", 1, prog, p)
+    assert "枠なり" in text and "内枠勢" in text
+    assert "追い込み" not in text and "後方の" not in text
+    assert "①②③④⑤⑥" not in text and "前団" not in text
