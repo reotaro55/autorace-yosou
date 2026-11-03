@@ -99,7 +99,7 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
             p1 = (f"{who(a)}の先行から。{line(a)}から先手を取り、後続に並ばせず押し切る形を狙う。{t_fast}")
     elif all_same:
         n = max(rd)
-        pos = "大外" if a == n else ("外枠" if a > n / 2 else "中枠")
+        pos = "大外" if a == n else ("外枠" if a >= n - 1 else "中枠")
         p1 = (f"{who(a)}は{pos}からどこまで出られるか。試走{A['試走T']}" + ("の一番時計でも" if fast else "でも") +
               f"、内の{grp(front, '車')}をまとめて交わせるとは限らない。" +
               ("立ち上がりで好位を取れれば、早めに抜け出す形。" if v == 0
