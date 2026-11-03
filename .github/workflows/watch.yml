@@ -45,6 +45,15 @@ jobs:
             fi
             sleep 90
           done
+      - name: 見張り終了時に結果を取得して集計（定期実行が動かない日の保険）
+        run: |
+          h=$(TZ=Asia/Tokyo date +%-H)
+          if [ $h -ge 1 ] && [ $h -lt 8 ]; then
+            git pull --rebase -q || true
+            python cli.py fill | tee report.txt || true
+            git add -A data report.txt
+            git diff --cached --quiet || { git commit -q -m "結果取得と検証集計 $(TZ=Asia/Tokyo date +%F)"; git pull --rebase -q && git push -q; }
+          fi
       - name: 開催時間内なら見張りを引き継ぐ
         env:
           GH_TOKEN: ${{ github.token }}
