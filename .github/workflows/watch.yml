@@ -1,0 +1,53 @@
+name: 開催中の見張り（自動予想）
+
+# 1回起動すると約5時間40分、90秒おきに開催場を確認して買い目・記事を記録する。
+# 終わる時点でまだ開催時間内なら、自分をもう一度起動して見張りを続ける。
+# 日本時間 1:00〜8:00 は止まる。朝は下の定期実行か、手動実行で起動する。
+on:
+  schedule:
+    - cron: "41 23 * * *"   # 日本時間 8:41
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: 見張り
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          end=$((SECONDS + 20400))
+          while [ $SECONDS -lt $end ]; do
+            h=$(TZ=Asia/Tokyo date +%-H)
+            if [ $h -ge 1 ] && [ $h -lt 8 ]; then echo "本日の見張り終了"; break; fi
+            git pull --rebase -q || true
+            python autopick.py || echo "今回の確認でエラー（次回やり直し）"
+            for d in data articles; do [ -d $d ] && git add -A $d; done
+            if ! git diff --cached --quiet; then
+              git commit -q -m "自動予想 $(TZ=Asia/Tokyo date '+%F %H:%M')"
+              git pull --rebase -q && git push -q || echo "保存に失敗（次回やり直し）"
+            fi
+            sleep 90
+          done
+      - name: 開催時間内なら見張りを引き継ぐ
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          h=$(TZ=Asia/Tokyo date +%-H)
+          if [ $h -ge 8 ]; then gh workflow run watch.yml --ref main -R "$GITHUB_REPOSITORY"; echo "次の見張りを起動"; fi

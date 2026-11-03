@@ -1,8 +1,7 @@
-name: 数値ルールで自動予想
+name: 自動予想（1回だけ確認）
 
+# 普段は watch.yml が見張る。これは手動で1回だけ確認したいとき用
 on:
-  schedule:
-    - cron: "*/5 0-15 * * *"   # 日本時間 9:00〜24:55 に5分おき
   workflow_dispatch:
 
 permissions:
