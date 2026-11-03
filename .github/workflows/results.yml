@@ -1,0 +1,28 @@
+name: 結果取得と検証集計
+
+on:
+  schedule:
+    - cron: "17 15 * * *"   # 毎日 0:17（日本時間）ナイター終了後
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: 台帳のうち結果未取得のレースを取得して集計
+        run: python cli.py fill | tee report.txt
+      - name: 取得したデータを保存
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data report.txt
+          git diff --cached --quiet || git commit -m "結果取得と検証集計 $(TZ=Asia/Tokyo date +%F)"
+          git push
