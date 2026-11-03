@@ -76,8 +76,9 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
     fast = a == fastest
     if not front:
         lead = "最内から" if all_same else f"{line(a)}から"
-        p1 = (f"🎯 {who(a)}の先行から。{lead}先に出れば、そのまま押し切る形。"
-              f"試走{A['試走T']}" + ("は一番時計。" if fast else "。"))
+        p1 = (f"🎯 {who(a)}の先行から。{lead}先手を取り、内を締めて逃げる形。"
+              f"試走{A['試走T']}" + ("は一番時計で、" if fast else "で、") +
+              "後ろの仕掛けを待たずにペースを上げられるか。")
     elif all_same:
         n = max(rd)
         pos = "大外" if a == n else ("外枠" if a > n / 2 else "中枠")
@@ -104,8 +105,15 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
         elif B["ハンデ"] > A["ハンデ"]:
             cl.append(f"{_c(b)}は{line(b)}から追う形で、{_c(a)}に離されなければ届く。" if i == 0
                       else f"{_c(b)}は試走{B['試走T']}、後方から2着争いに加われるか。")
-        else:
-            cl.append(f"{_c(b)}は{_c(a)}の後ろを追走する形。")
+        else:  # 同じ線の外枠
+            heads = {int(c.split("-")[0]) for c in honmei + taikou}
+            if i == 0:
+                cl.append(f"{_c(b)}は{_c(a)}に続いて前へ出る形を本線に、" +
+                          ("カマシが決まる逆転も押さえる。" if b in heads else "2着を争う。"))
+            else:
+                first = partners[0]
+                cl.append(f"{_c(b)}が{_c(a)}{_c(first)}の攻めを追って好位を取れば、" +
+                          ("頭まで拾う。" if b in heads else "連対圏へ。"))
     p2 = f"🔥 相手は{'と'.join(who(b) for b in partners)}。" + "".join(cl)
 
     # ③ 押さえと崩れる条件（ここに出す車はすべて買い目に入っている）
@@ -120,7 +128,8 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
         worry = (f"{_c(a)}の抜け出しが遅れれば、{_c(far)}の逆転まで。" if v == 0 or not front
                  else f"{grp(front, fl)}の抵抗が長引けば、後方の{_c(far)}が届く展開まで。")
     else:
-        worry = f"{_c(a)}が先手を取れなければ、{cs(partners)}の逆転まで。"
+        worry = (f"{_c(a)}が内で踏ん張れなければ、{cs(partners)}の逆転まで。" if v == 0
+                 else f"{_c(a)}が先手を取れなければ、{cs(partners)}の逆転まで。")
     keep = f"{'、'.join(who(x) for x in others)}の残りも押さえ、{_c(partners[0])}との一本被りにはしない。" if others else ""
     p3 = f"🔸 {keep}{worry}"
 
