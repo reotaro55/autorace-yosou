@@ -12,6 +12,7 @@ from pathlib import Path
 
 import article
 import ledger
+import notify
 import strategy
 from autorace_api import BASE, PLACE_JA, AutoraceClient, now_iso, save_json
 
@@ -71,9 +72,15 @@ def run() -> list[str]:
                             memo=f'順位{"-".join(map(str, picks["順位"]))} 距離{h.get("distance")}m')
             logs.append(f'{name}: 記録 本命{picks["本命"]} 対抗{picks["対抗"]}（締切{h["telvoteTime"]}）')
             try:  # 記事で失敗しても買い目の記録は残す
-                write_article(day, place, race, program, picks)
+                path = write_article(day, place, race, program, picks)
             except Exception as e:
                 logs.append(f"{name}: 記事作成に失敗（{e}）")
+            else:
+                try:  # 投稿で失敗しても記録と記事は残す
+                    if notify.discord(path.read_text(encoding="utf-8")):
+                        logs.append(f"{name}: Discordに投稿")
+                except Exception as e:
+                    logs.append(f"{name}: Discord投稿に失敗（{e}）")
         except PermissionError as e:
             logs.append(f"{name}: 記録せず（{e}）")
     save_json("hold", "all", hold["date"][:10], 0, hold)

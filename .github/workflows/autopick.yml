@@ -26,6 +26,8 @@ jobs:
       - run: pip install requests
       - name: 試走が出たレースの買い目を記録
         run: python autopick.py
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       - name: 台帳を保存
         run: |
           git config user.name "github-actions"

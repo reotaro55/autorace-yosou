@@ -68,3 +68,9 @@ def test_article_all_cases():
         p = strategy.make_picks(prog, strategy.load_rule("v1"), 3100)
         assert p["順位"][0] == car
         article.build("kawaguchi", 8, prog, p)
+
+
+def test_discord_skips_without_url(monkeypatch):
+    import notify
+    monkeypatch.delenv("DISCORD_WEBHOOK_URL", raising=False)
+    assert notify.discord("test") is False
