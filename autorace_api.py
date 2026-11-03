@@ -58,9 +58,10 @@ class AutoraceClient:
             raise RuntimeError(f"{kind} 取得失敗: {data.get('errors')}")
         return data["body"]
 
-    def program(self, place: str, date: str, race: int) -> dict:
+    def program(self, place: str, date: str, race: int, save: bool = True) -> dict:
         body = self._post("Program", place, date, race)
-        save_json("program", place, date, race, body)
+        if save:
+            save_json("program", place, date, race, body)
         return body
 
     def result(self, place: str, date: str, race: int) -> dict:
