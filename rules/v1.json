@@ -1,0 +1,9 @@
+{
+  "version": "v1",
+  "adopted_from": "2026-11-03",
+  "note": "試走タイムに偏差を足して競走タイムを見積もり、ハンデ分の距離を含めた走破時間が短い順に並べる。映像・展開は入れない",
+  "dev_weight": 1.0,
+  "default_distance": 3100,
+  "honmei": ["A-B-C", "A-C-B", "B-A-C"],
+  "taikou": ["B-C-A", "C-A-B", "A-B-D"]
+}

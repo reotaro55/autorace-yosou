@@ -1,0 +1,36 @@
+name: 数値ルールで自動予想
+
+on:
+  schedule:
+    - cron: "*/5 0-15 * * *"   # 日本時間 9:00〜24:55 に5分おき
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ledger-write
+  cancel-in-progress: false
+
+jobs:
+  pick:
+    # 非公開リポジトリでは自動実行しない（無料枠を使い切らないため）。手動実行は可
+    if: ${{ !github.event.repository.private || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: 試走が出たレースの買い目を記録
+        run: python autopick.py
+      - name: 台帳を保存
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data/picks.csv data/program
+          git diff --cached --quiet && exit 0
+          git commit -m "自動予想 $(TZ=Asia/Tokyo date '+%F %H:%M')"
+          git pull --rebase -q && git push

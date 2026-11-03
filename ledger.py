@@ -18,7 +18,7 @@ from autorace_api import PLACE_JA, finish_order, load_json, now_iso, trifecta_pa
 
 LEDGER = Path(__file__).parent / "data" / "picks.csv"
 FIELDS = ["記録時刻", "日付", "場", "R", "種別", "本命", "対抗", "1点金額",
-          "実購入額", "状態", "変更理由", "メモ"]
+          "実購入額", "状態", "変更理由", "メモ", "ルール", "締切"]
 # 種別: 裁量（映像を見た予想） / 数値（ルールだけの予想）。検証は分けて集計する
 KINDS = ("裁量", "数値")
 STATES = ("有効", "見送り")
@@ -54,11 +54,13 @@ def _append(row: dict) -> None:
 
 
 def add_pick(date, place, race, honmei, taikou="", kind="裁量", unit=100,
-             actual="", state="有効", reason="", memo="") -> dict:
+             actual="", state="有効", reason="", memo="", rule="", deadline="") -> dict:
     if kind not in KINDS:
         raise ValueError(f"種別は {KINDS} のどれか")
     if state not in STATES:
         raise ValueError(f"状態は {STATES} のどれか")
+    if deadline and now_iso() >= deadline:
+        raise PermissionError("締切を過ぎているので記録しない")
     if load_json("result", place, date, int(race)) is not None:
         raise PermissionError("このレースは結果を取得済み。結果を見た後の記録はできない")
     existing = [r for r in _rows() if (r["日付"], r["場"], r["R"], r["種別"]) ==
@@ -72,7 +74,8 @@ def add_pick(date, place, race, honmei, taikou="", kind="裁量", unit=100,
         raise ValueError("本命と対抗で同じ買い目が重複している")
     row = {"記録時刻": now_iso(), "日付": date, "場": place, "R": str(race), "種別": kind,
            "本命": " ".join(h), "対抗": " ".join(t), "1点金額": str(unit),
-           "実購入額": str(actual), "状態": state, "変更理由": reason, "メモ": memo}
+           "実購入額": str(actual), "状態": state, "変更理由": reason, "メモ": memo,
+           "ルール": rule, "締切": deadline}
     _append(row)
     return row
 
@@ -83,6 +86,7 @@ class RaceEval:
     place: str
     race: int
     kind: str
+    rule: str
     status: str          # 的中 / 不的中 / 見送り / 返還 / 結果未取得 / 払戻未確認 / 集計外
     points: int = 0
     stake: int = 0
@@ -112,7 +116,11 @@ def evaluate() -> list[RaceEval]:
     out = []
     for p in final_picks():
         race = int(p["R"])
-        ev = RaceEval(p["日付"], p["場"], race, p["種別"], "")
+        ev = RaceEval(p["日付"], p["場"], race, p["種別"], p.get("ルール") or "", "")
+        if p.get("締切") and p["記録時刻"] >= p["締切"]:
+            ev.status, ev.note = "集計外", "締切後に記録された行"
+            out.append(ev)
+            continue
         if p.get("_late"):
             ev.status, ev.note = "集計外", "結果取得後に記録された行"
             out.append(ev)
@@ -147,8 +155,8 @@ def evaluate() -> list[RaceEval]:
     return out
 
 
-def summary(evals: list[RaceEval], kind: str | None = None) -> dict:
-    es = [e for e in evals if kind is None or e.kind == kind]
+def summary(evals: list[RaceEval], kind: str | None = None, rule: str | None = None) -> dict:
+    es = [e for e in evals if (kind is None or e.kind == kind) and (rule is None or e.rule == rule)]
     counted = [e for e in es if e.status in ("的中", "不的中")]
     stake = sum(e.stake for e in counted)
     payout = sum(e.payout for e in counted)
@@ -168,15 +176,16 @@ def summary(evals: list[RaceEval], kind: str | None = None) -> dict:
 def format_report(evals: list[RaceEval]) -> str:
     lines = []
     for e in sorted(evals, key=lambda e: (e.date, e.place, e.race)):
-        name = f'{e.date} {PLACE_JA.get(e.place, e.place)}{e.race}R[{e.kind}]'
+        name = f'{e.date} {PLACE_JA.get(e.place, e.place)}{e.race}R[{e.kind}{e.rule}]'
         if e.status in ("的中", "不的中"):
             pay = f" 払戻{e.payout:,}円" if e.payout else ""
             lines.append(f"{name} 結果{e.result} {e.status}{pay}（{e.points}点・{e.stake:,}円）")
         else:
             lines.append(f"{name} {e.status} {e.note}".rstrip())
-    for k in KINDS:
-        s = summary(evals, k)
-        if s["対象レース"] or s["見送り"] or s["未集計（結果未取得・払戻未確認・集計外）"]:
-            lines.append(f"\n■{k}予想の検証（記録した1点金額で計算・実際の購入収支とは別）")
-            lines += [f"  {a}: {b}" for a, b in s.items()]
+    groups = sorted({(e.kind, e.rule) for e in evals})
+    for k, r in groups:
+        s = summary(evals, k, r)
+        label = f"{k}予想" + (f"（ルール{r}）" if r else "")
+        lines.append(f"\n■{label}の検証（記録した1点金額で計算・実際の購入収支とは別）")
+        lines += [f"  {a}: {b}" for a, b in s.items()]
     return "\n".join(lines)
