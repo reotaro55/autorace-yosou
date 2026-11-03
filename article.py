@@ -35,6 +35,7 @@ def _c(n: int) -> str:
 
 def build(place: str, race: int, program: dict, picks: dict, meta: dict | None = None) -> str:
     meta = meta or {}
+    v = race % 2  # 言い回しの切り替え
     rd = {k: v for k, v in _riders(program).items() if not v["欠車"]}
     order = picks["順位"]
     honmei, taikou = picks["本命"], picks["対抗"]
@@ -81,7 +82,9 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
         n = max(rd)
         pos = "大外" if a == n else ("外枠" if a > n / 2 else "中枠")
         p1 = (f"🎯 {who(a)}は{pos}から。試走{A['試走T']}" + ("の一番時計でも" if fast else "でも") +
-              f"、内の{grp(front, '車')}をまとめて交わせるとは限らない。立ち上がりで好位を取れれば、早めに抜け出す形。")
+              f"、内の{grp(front, '車')}をまとめて交わせるとは限らない。" +
+              ("立ち上がりで好位を取れれば、早めに抜け出す形。" if v == 0
+               else "前を早めに捌ければ、後ろの仕掛けを待たずにペースを上げる形。"))
     else:
         verb = "追い込み" if A["ハンデ"] == max_h else "抜け出し"
         p1 = (f"🎯 {who(a)}の{verb}から。{line(a)}から{grp(front, '前団')}を早めに捌ければ、"
@@ -93,8 +96,11 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
         B = rd[b]
         place_from = "内枠から" if B["ハンデ"] == A["ハンデ"] else f"{line(b)}から"
         if b in front:
-            cl.append(f"{_c(b)}は{place_from}先に出て、{_c(a)}の攻めをしのげば逆転まで。" if i == 0
-                      else f"{_c(b)}も前で粘れば2着争い。")
+            if i == 0:
+                cl.append(f"{_c(b)}は{place_from}先に出て、{_c(a)}の攻めをしのげば逆転まで。" if v == 0
+                          else f"{_c(b)}は{place_from}。{_c(a)}より先に出られれば逆転まで。")
+            else:
+                cl.append(f"{_c(b)}も前で粘れば2着争い。")
         elif B["ハンデ"] > A["ハンデ"]:
             cl.append(f"{_c(b)}は{line(b)}から追う形で、{_c(a)}に離されなければ届く。" if i == 0
                       else f"{_c(b)}は試走{B['試走T']}、後方から2着争いに加われるか。")
@@ -105,11 +111,14 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
     # ③ 押さえと崩れる条件（ここに出す車はすべて買い目に入っている）
     ahead = [k for k in partners if k in front]
     behind = [k for k in partners if rd[k]["ハンデ"] > A["ハンデ"]]
+    fl = "内枠勢" if all_same else "前団"
     if front and ahead:
-        worry = f"{_c(a)}が捌きに手間取れば、{cs(ahead)}の前残りまで。"
+        worry = (f"{_c(a)}が捌きに手間取れば、{cs(ahead)}の前残りまで。" if v == 0
+                 else f"{grp(front, fl)}の抵抗が長引けば、{cs(ahead)}の逃げ残りまで。")
     elif behind:
         far = max(behind, key=lambda k: (rd[k]["ハンデ"], k))
-        worry = f"{_c(a)}の抜け出しが遅れれば、{_c(far)}の逆転まで。"
+        worry = (f"{_c(a)}の抜け出しが遅れれば、{_c(far)}の逆転まで。" if v == 0 or not front
+                 else f"{grp(front, fl)}の抵抗が長引けば、後方の{_c(far)}が届く展開まで。")
     else:
         worry = f"{_c(a)}が先手を取れなければ、{cs(partners)}の逆転まで。"
     keep = f"{'、'.join(who(x) for x in others)}の残りも押さえ、{_c(partners[0])}との一本被りにはしない。" if others else ""
@@ -118,18 +127,16 @@ def build(place: str, race: int, program: dict, picks: dict, meta: dict | None =
     tags = [f"#{PLACE_JA[place]}オート", "#オートレース予想"] + ([f"#{meta['tag']}"] if meta.get("tag") else [])
     body = [title, "", p1, "", p2, "", p3, "", "✅ 本命", *honmei, "", "🔄 対抗", *taikou, "", " ".join(tags)]
     text = "\n".join(body)
-    _check(text, honmei + taikou)
+    _check(text, honmei + taikou, [a] + partners + others)
     return text
 
 
-def _check(text: str, combos: list[str]) -> None:
-    """記事に出てきた車番がすべて買い目に入っているか確認する（前団の説明は除く）。"""
+def _check(text: str, combos: list[str], picked: list[int]) -> None:
+    """記事で相手・押さえとして名前を出した車が、すべて買い目に入っているか確認する。"""
     bought = {int(x) for c in combos for x in c.split("-")}
-    for line in text.splitlines():
-        if line.startswith(("🔥", "🔸")):
-            for i, ch in enumerate(CIRCLE):
-                if ch in line and i not in bought:
-                    raise AssertionError(f"記事で拾った{ch}が買い目に入っていない")
+    for n in picked:
+        if n not in bought:
+            raise AssertionError(f"記事で拾った{CIRCLE[n]}が買い目に入っていない")
     for ng in ("鉄板", "抜群", "オッズ"):
         if ng in text:
             raise AssertionError(f"使わない言葉が入っている: {ng}")

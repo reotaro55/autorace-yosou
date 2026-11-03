@@ -92,7 +92,9 @@ def run() -> list[str]:
                 logs.append(f"{name}: 記事作成に失敗（{e}）")
             else:
                 try:  # 投稿で失敗しても記録と記事は残す
-                    if notify.discord(path.read_text(encoding="utf-8")):
+                    ids = notify.discord(path.read_text(encoding="utf-8"))
+                    if ids:
+                        path.with_suffix(".discord").write_text(" ".join(ids), encoding="utf-8")
                         logs.append(f"{name}: Discordに投稿")
                 except Exception as e:
                     logs.append(f"{name}: Discord投稿に失敗（{e}）")

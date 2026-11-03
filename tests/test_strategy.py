@@ -73,7 +73,7 @@ def test_article_all_cases():
 def test_discord_skips_without_url(monkeypatch):
     import notify
     monkeypatch.delenv("DISCORD_WEBHOOK_URL", raising=False)
-    assert notify.discord("test") is False
+    assert notify.discord("test") is None
 
 
 def test_article_same_handicap():
