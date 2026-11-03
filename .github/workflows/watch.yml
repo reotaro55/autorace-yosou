@@ -1,11 +1,11 @@
 name: 開催中の見張り（自動予想）
 
 # 1回起動すると約5時間40分、90秒おきに開催場を確認して買い目・記事を記録する。
-# 終わる時点でまだ開催時間内なら、自分をもう一度起動して見張りを続ける。
-# 日本時間 1:00〜8:00 は止まる。朝は下の定期実行か、手動実行で起動する。
+# 終わるときに自分をもう一度起動して、ずっと見張りを続ける（GitHubの定期実行が動かないため）。
+# 日本時間 1:00〜8:00 は予想せず、前日分の結果取得と集計だけ行って待機する。
 on:
   schedule:
-    - cron: "41 23 * * *"   # 日本時間 8:41
+    - cron: "41 23 * * *"   # 日本時間 8:41（見張りが止まっていたときの保険）
   workflow_dispatch:
 
 permissions:
@@ -32,31 +32,32 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          end=$((SECONDS + 20400))
-          while [ $SECONDS -lt $end ]; do
-            h=$(TZ=Asia/Tokyo date +%-H)
-            if [ $h -ge 1 ] && [ $h -lt 8 ]; then echo "本日の見張り終了"; break; fi
-            git pull --rebase -q || true
-            python autopick.py || echo "今回の確認でエラー（次回やり直し）"
-            for d in data articles; do [ -d $d ] && git add -A $d; done
+          save() {
+            for d in data articles report.txt; do [ -e $d ] && git add -A $d; done
             if ! git diff --cached --quiet; then
-              git commit -q -m "自動予想 $(TZ=Asia/Tokyo date '+%F %H:%M')"
+              git commit -q -m "$1 $(TZ=Asia/Tokyo date '+%F %H:%M')"
               git pull --rebase -q && git push -q || echo "保存に失敗（次回やり直し）"
             fi
+          }
+          end=$((SECONDS + 20400))
+          while [ $SECONDS -lt $end ]; do
+            git pull --rebase -q || true
+            h=$(TZ=Asia/Tokyo date +%-H)
+            if [ $h -ge 1 ] && [ $h -lt 8 ]; then
+              # 深夜：結果の取得と集計（1日1回で足りるので、1時台と5時台だけ）
+              if [ $h -eq 1 ] || [ $h -eq 5 ]; then
+                python cli.py fill > report.txt || true
+                save "結果取得と検証集計"
+              fi
+              sleep 1800
+              continue
+            fi
+            python autopick.py || echo "今回の確認でエラー（次回やり直し）"
+            save "自動予想"
             sleep 90
           done
-      - name: 見張り終了時に結果を取得して集計（定期実行が動かない日の保険）
-        run: |
-          h=$(TZ=Asia/Tokyo date +%-H)
-          if [ $h -ge 1 ] && [ $h -lt 8 ]; then
-            git pull --rebase -q || true
-            python cli.py fill | tee report.txt || true
-            git add -A data report.txt
-            git diff --cached --quiet || { git commit -q -m "結果取得と検証集計 $(TZ=Asia/Tokyo date +%F)"; git pull --rebase -q && git push -q; }
-          fi
-      - name: 開催時間内なら見張りを引き継ぐ
+      - name: 見張りを引き継ぐ
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          h=$(TZ=Asia/Tokyo date +%-H)
-          if [ $h -ge 8 ]; then gh workflow run watch.yml --ref main -R "$GITHUB_REPOSITORY"; echo "次の見張りを起動"; fi
+        run: gh workflow run watch.yml --ref main -R "$GITHUB_REPOSITORY" && echo "次の見張りを起動"
