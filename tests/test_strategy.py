@@ -48,7 +48,7 @@ def test_article_matches_picks():
     import article
     p = strategy.make_picks(PROG, strategy.load_rule("v1"), 3100)
     text = article.build("kawaguchi", 8, PROG, p)
-    assert text.startswith("🏁 川口8R｜展開予想")
+    assert text.startswith("🏁川口8R｜展開予想")
     assert "①②を早めに捌ければ" in text  # 同じ10線の内枠②も交わす相手に入る
     for combo in p["本命"] + p["対抗"]:
         assert combo in text
@@ -86,6 +86,6 @@ def test_article_same_handicap():
     prog["playerList"][6]["trialRunTime"] = "3.20"  # ⑦を頭に
     p = strategy.make_picks(prog, strategy.load_rule("v1"), 3100)
     text = article.build("hamamatsu", 1, prog, p)
-    assert "大外から" in text and "まとめて交わせるとは限らない" in text
+    assert "大外から" in text and "まとめて交わせるとは限らない" in text and "相手筆頭" in text
     assert "追い込み" not in text and "後方の" not in text
     assert "①②③④⑤⑥" not in text and "前団" not in text
