@@ -4,6 +4,16 @@ on:
   schedule:
     - cron: "17 15 * * *"   # 毎日 0:17（日本時間）ナイター終了後
   workflow_dispatch:
+    inputs:
+      place:
+        description: "場（例 kawaguchi）。空なら台帳分だけ取得"
+        required: false
+      date:
+        description: "日付（例 2026-11-02）"
+        required: false
+      races:
+        description: "R（例 1-12）"
+        required: false
 
 permissions:
   contents: write
@@ -17,6 +27,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests
+      - name: 指定したレースの結果を取得（手動実行時）
+        if: ${{ github.event.inputs.place != '' && github.event.inputs.place != null }}
+        run: python cli.py results "${{ github.event.inputs.place }}" "${{ github.event.inputs.date }}" "${{ github.event.inputs.races }}"
       - name: 台帳のうち結果未取得のレースを取得して集計
         run: python cli.py fill | tee report.txt
       - name: 取得したデータを保存
