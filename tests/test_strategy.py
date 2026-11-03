@@ -89,3 +89,10 @@ def test_article_same_handicap():
     assert "大外から" in text and "まとめて交わせるとは限らない" in text and "相手筆頭" in text
     assert "追い込み" not in text and "後方の" not in text
     assert "①②③④⑤⑥" not in text and "前団" not in text
+
+
+def test_avg_st():
+    import article
+    prog = {"latest10List": {"9": [{"stTime": "0.10"}, {"stTime": "0.20"}, {"stTime": None}, {"stTime": "0.12"}]}}
+    assert article.avg_st(prog, "9") == 0.14
+    assert article.avg_st({"latest10List": {"9": [{"stTime": "0.10"}]}}, "9") is None  # 3走未満は使わない
