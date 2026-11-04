@@ -39,7 +39,7 @@ jobs:
               git pull --rebase -q && git push -q || echo "保存に失敗（次回やり直し）"
             fi
           }
-          end=$((SECONDS + 20400))
+          end=$((SECONDS + 18000))  # 深夜の30分待機があっても350分の上限に収まるように
           while [ $SECONDS -lt $end ]; do
             git pull --rebase -q || true
             h=$(TZ=Asia/Tokyo date +%-H)
