@@ -141,6 +141,10 @@ def evaluate() -> list[RaceEval]:
         ev.result = "-".join(map(str, order[:3]))
         pays = trifecta_payouts(res)
         absent = (res.get("refundInfo") or {}).get("absent") or []
+        if not pays and len(absent) >= len(res.get("raceResult") or absent):
+            ev.status, ev.note, ev.stake = "返還", "レース不成立（全車返還）", 0
+            out.append(ev)
+            continue
         if not pays:
             ev.status = "払戻未確認"
             out.append(ev)
@@ -168,6 +172,7 @@ def summary(evals: list[RaceEval], kind: str | None = None, rule: str | None = N
         "回収率%": round(payout / stake * 100, 1) if stake else None,
         "収支": payout - stake,
         "見送り": sum(e.status == "見送り" for e in es),
+        "返還・不成立": sum(e.status == "返還" for e in es),
         "未集計（結果未取得・払戻未確認・集計外）":
             sum(e.status in ("結果未取得", "払戻未確認", "集計外") for e in es),
     }

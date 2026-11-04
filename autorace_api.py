@@ -134,6 +134,8 @@ def trifecta_payouts(body: dict) -> dict[str, int]:
     rt3 = (body.get("refundInfo") or {}).get("rt3") or {}
     out = {}
     for x in rt3.get("list", []):
+        if x.get("refund") is None or not x.get("1thCarNo"):
+            continue  # 中止・不成立などで払戻がない
         key = f'{x["1thCarNo"]}-{x["2thCarNo"]}-{x["3thCarNo"]}'
         out[key] = int(x["refund"])
     return out
